@@ -1,0 +1,27 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY systemerror_check IS PORT (
+          CLK		     		: in  std_logic := '0';
+          errr      		: in  std_logic := '0';
+			 x_drive      		: in  std_logic := '0';
+			 y_drive      		: in  std_logic := '0';
+			target_reached : in std_logic := '0'; 
+			original		: in  std_logic_vector(6 downto 0);
+			 output		: in  std_logic_vector(6 downto 0)
+			 );
+END ENTITY;
+
+ARCHITECTURE one of systemerror_check is
+
+signal temp     : std_logic; 
+
+begin 
+
+temp <= CLK AND errr AND NOT(target_reached) AND (x_drive OR y_drive);
+
+output <= "0000000" when temp = '1' else original; 
+
+	
+end;

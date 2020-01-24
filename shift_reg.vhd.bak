@@ -1,0 +1,40 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY Bidir_shift_reg IS PORT (
+          CLK		     		: in  std_logic := '0';
+          RESET_n      		: in  std_logic := '0';
+			 CLK_EN		: in  std_logic := '0';
+			 LEFT0_RIGHT1			: in  std_logic := '0';
+          REG_BITS			   : out std_logic_vector(7 downto 0)
+			 );
+END ENTITY;
+
+	ARCHITECTURE one of Bidir_shift_reg IS
+	sIGNAL SREG      : STD_LOGIC_VECTOR (7 DOWNTO 0);
+	
+	
+begin
+
+PROCESS (clk, reset_N) IS 
+BEGIN 
+	IF (reset_N = '0') THEN 
+			SREG <= "00000000";
+			
+	ELSIF (RISING_EDGE(clk) AND (CLK_EN = '1')) then 
+		if (LEFT0_RIGHT1 = '1') then --true for right shift 
+		sreg (7 downto 0) <= '1' & sreg(7 downto 1);
+		
+		elsif (LEFT0_RIGHT1 = '0') then 
+			sreg (7 downto 0) <= sreg(6 downto 0) & '0';
+			
+			end if;
+			
+	end if;
+	
+	REG_BITS <= sreg;
+	
+	end process;
+	
+END one;

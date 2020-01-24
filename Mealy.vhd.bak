@@ -1,0 +1,128 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+Entity MealyStateMachine IS Port
+(
+ clk_input, rst_n, xMotion, extenderOut  : IN std_logic;
+ comparator 											: IN std_logic_vector(2 downto 0);
+ enable, Up1Down0, extenderOn, error						: OUT std_logic
+ );
+END ENTITY;
+ 
+
+ Architecture SM of MealyStateMachine is
+ 
+  
+ TYPE STATE_NAMES IS (S0, S1, S2);   -- list all the STATE_NAMES values
+
+ 
+ SIGNAL current_state, next_state	:  STATE_NAMES;     	-- signals of type STATE_NAMES
+
+
+ BEGIN
+ 
+ --------------------------------------------------------------------------------
+ --State Machine:
+ --------------------------------------------------------------------------------
+
+ -- REGISTER_LOGIC PROCESS:
+ 
+Register_Section: PROCESS (clk_input, rst_n, next_state)  -- this process synchronizes the activity to a clock
+BEGIN
+	IF (rst_n = '0') THEN
+		current_state <= S0;
+	ELSIF(rising_edge(clk_input)) THEN
+		current_state <= next_State;
+	END IF;
+END PROCESS;	
+
+
+
+-- TRANSITION LOGIC PROCESS
+
+Transition_Section: PROCESS (I0, I1, I2, current_state) 
+
+BEGIN
+      Case current_state IS
+		--Not moving
+         WHEN S0 =>		
+				IF(extender = '0' && xMotion='1' && comparator /= "010") THEN
+					next_state <= S1;
+				ELSif(extender = '0' && comparator /= "010") then
+					next_state <= s1;
+				ELSif(extenderOn = '1' && (xMotion = '1')) then
+					next_state <= s2;
+				ELSE next_state <=s0;
+				END IF;
+		--Moving
+         WHEN S1 =>		
+				IF(extender = '0' && xMotion='1' && comparator /= "010") THEN
+					next_state <= S1;
+				ELSif(extender = '0' && comparator /= "010") then
+					next_state <= s1;
+				ELSif(extenderOn = '1' && (xMotion = '1')) then
+					next_state <= s2;
+				ELSE next_state <=s0;
+				END IF;
+
+		--Error
+         WHEN S2 =>		
+				IF(extender = '0' && xMotion='1' && comparator /= "010") THEN
+					next_state <= S1;
+				ELSif(extender = '0' && comparator /= "010") then
+					next_state <= s1;
+				ELSif(extenderOn = '1' && (xMotion = '1')) then
+					next_state <= s2;
+				ELSE next_state <=s0;
+				END IF;
+
+ 		END CASE;
+ END PROCESS;
+
+-- DECODER SECTION PROCESS
+
+Decoder_Section: PROCESS (I0, I1, I2, current_state) 
+
+BEGIN
+    Case current_state IS
+         WHEN (S0 && comparator = "010") =>		
+			enable <= '0';
+			Up1Down0 <= '0';
+			extenderOn <= '1';
+			error <= '0';
+			
+			WHEN (S0 && comparator /= "010") =>		
+			enable <= '0';
+			Up1Down0 <= '0';
+			extenderOn <= '0';
+			error <= '0';
+			
+         WHEN (S1 && comparator = "100") =>		
+			enable <= '1';
+			Up1Down0 <= '1';
+			extenderOn <= '0';
+			error <= '0';
+
+         WHEN (S1 && comparator = "001")=>		
+			enable <= '1';
+			Up1Down0 <= '0';
+			extenderOn <= '0';
+			error <= '0';
+			
+         WHEN (S1 && comparator = "010") =>		
+			enable <= '0';
+			Up1Down0 <= '0';
+			extenderOn <= '1';
+			error <= '0';
+
+         WHEN S2 		
+			enable <= '0';
+			Up1Down0 <= '0';
+			extenderOn <= '1';
+			error <= '1';
+
+	  END CASE;
+ END PROCESS;
+
+ END ARCHITECTURE SM;
